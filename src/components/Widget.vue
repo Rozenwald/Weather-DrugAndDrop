@@ -1,28 +1,54 @@
 <template>
   <div class="widget">
-    <div class="widget__header">
-      <div class="widget_city"> {{data.city.name}}, {{data.city.country}}</div>
-      <div class="widget_settings">
-        <v-btn></v-btn>
-      </div>
-    </div>
-    <div class="widget__info_main">
-      <div class="widget__img">
-        <img :src="data.main.icon" alt="img">
-      </div>
-      <div class="widget__text"> {{data.main.temp}} </div>
-      <div class="widget__text"> Feels like{{data.main.feelsLike}}. {{data.main.description}} </div>
-    </div>
-    <div class="widget__info_optional">
-      <div class="row">
-        <div class="widget__wind">
-          <div> {{data.wind.deg}} </div>
-          <div> {{data.wind.speed}} </div>
+
+    <v-skeleton-loader
+      v-bind="{class: 'mb-6'}"
+      v-show="loading"
+      max-width="350"
+      type="heading, list-item-avatar, text, text, text ">
+    </v-skeleton-loader>
+
+    <div v-if="!loading && data">
+      <v-row class="header">
+        <div class="header__text"> {{data?.city.name}}, {{data?.city.country}}</div>
+        <div v-if="id == 0" class="header__settings">
+          <v-btn @click="openSettings()" icon>
+            <v-icon dark>
+              mdi-cog
+            </v-icon>
+          </v-btn>
         </div>
-        <div class="widget__text"> {{data.pressure}} </div>
-        <div class="widget__text"> {{data.humidity}} </div>
-        <div class="widget__text"> {{data.visibility}} </div>
+      </v-row>
+
+      <v-row class="main">
+        <div class="main__img">
+          <img :src="data?.main.icon" alt="img">
+        </div>
+        <div class="main__temp"> {{data?.main.temp}}°C </div>
+        <div class="main__text">
+          Feels like {{data?.main.feelsLike}}°C. {{data?.main.description}}
+        </div>
+      </v-row>
+
+      <div class="info">
+        <div class="info__wrapper">
+          <div class="icon-wrapper">
+            <v-icon class="icon-wrapper__icon_wind" color="red"> mdi-navigation </v-icon>
+            <div class="info__text"> {{data?.wind.speed}}m/s </div>
+          </div>
+          <div class="info__text"> Humidity: {{data?.humidity}}% </div>
+        </div>
+        <div class="info__wrapper">
+          <div class="icon-wrapper">
+            <v-icon class="icon-wrapper__icon" color="red"> mdi-gauge </v-icon>
+            <div class="info__text"> {{data?.pressure}}hPa </div>
+          </div>
+          <div class="info__text"> Visibility: {{data?.visibility}}km </div>
+        </div>
       </div>
+    </div>
+    <div v-if="!data && !loading">
+      Данные на город "{{name}}" отсутствуют
     </div>
   </div>
 </template>
@@ -36,29 +62,32 @@ import { TWidget } from '../types/index';
   name: 'Widget',
 })
 export default class App extends Vue {
-  @Prop(String) readonly cityId!: string;
+  @Prop(String) readonly name!: string;
 
-  private icon = '';
+  @Prop(Number) readonly id!: number;
 
   private data: TWidget|null = null;
 
-  // watch
-  // props
-  // data
-  // computed (get,set)
-  // methods
+  private loading = true;
+
   private getData() {
-    const url = `https://api.openweathermap.org/data/2.5/weather?id=${this.cityId}&appid=${process.env.VUE_APP_API_KEY}&units=metric`;
+    this.loading = true;
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${this.name}&appid=${process.env.VUE_APP_API_KEY}&units=metric&local=RU`;
     axios
       .get(url)
       .then((res) => {
         this.handlerResponse(res);
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log(err);
+        this.loading = false;
+      });
   }
 
   private handlerResponse(res:any) {
-    console.log('RESPONSE --- ', res);
+    console.log(res);
+    const text = res.data.weather[0].description;
+    const description: string = text[0].toUpperCase() + text.slice(1, text.length);
     this.data = {
       city: {
         name: res.data.name,
@@ -66,19 +95,25 @@ export default class App extends Vue {
       },
       main: {
         icon: `http://openweathermap.org/img/wn/${res.data.weather[0].icon}@2x.png`,
-        temp: res.data.main.temp,
-        feelsLike: res.data.main.feels_like,
-        description: res.data.weather[0].description,
+        temp: Math.round(res.data.main.temp),
+        feelsLike: Math.round(res.data.main.feels_like),
+        description,
       },
       wind: {
-        speed: res.data.wind.speed,
+        speed: res.data.wind.speed.toFixed(1),
         deg: res.data.wind.deg,
       },
       pressure: res.data.main.pressure,
       humidity: res.data.main.humidity,
-      visibility: res.data.visibility,
+      visibility: (res.data.visibility / 1000).toFixed(1),
     };
-    console.log(this.data);
+    const root = document.querySelector(':root');
+    root?.style.setProperty('--deg', `${this.data.wind.deg + 180}deg`);
+    this.loading = false;
+  }
+
+  openSettings() {
+    this.$root.$emit('openSettings');
   }
 
   created() {
@@ -87,11 +122,93 @@ export default class App extends Vue {
 }
 </script>
 <style lang="scss">
+  :root {
+    --deg: 180deg;
+  }
+  .row {
+    margin: 0px !important;
+  }
+  .error {
+    width: 350px;
+    margin-top: 24px;
+    margin-bottom: 24px;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid #474a51;
+    border-radius: 8px;
+    padding: 12px;
+  }
   .widget {
-    &__header {
+    width: 350px;
+    margin-top: 24px;
+    margin-bottom: 24px;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid #474a51;
+    border-radius: 8px;
+    padding: 12px;
+    .header {
+      justify-content: space-between;
+      text-align: center;
+      &__text {
+        display: flex;
+        justify-content: center;
+        margin-top: auto;
+        margin-bottom: auto;
+        font-weight: 700;
+      }
+    }
+    .main {
+      padding-top: 12px;
+      font-weight: 700;
+      &__text {
+        display: flex;
+      }
+      &__temp {
+        text-align: start;
+        font-size: 2em;
+        margin-top: auto;
+        margin-bottom: auto;
+      }
+    }
+    .info {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      padding-top: 12px;
+      &__wrapper {
+        &_left{
+          margin-right: 12px;
+        }
+        &_right{
+          margin-left: 12px;
+        }
+      }
+      &__text {
+        display: flex;
+        font-weight: 700;
+        text-align: start;
+        margin-top: 8px;
+        margin-bottom: 8px;
+        &_main{
+        }
+        &_optional{
+          font-weight: 550;
+        }
+      }
+    }
+    .icon-wrapper {
       display: flex;
-      justify-content: center;
-      text-align: center
+      &__icon {
+        margin-right: 5px;
+      }
+      &__icon_wind {
+        margin-right: 5px;
+        transform: rotate( var(--deg));
+      }
+      &__text {
+        margin-bottom: auto;
+        margin-top: auto;
+      }
     }
   }
 </style>
