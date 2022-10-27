@@ -83,11 +83,7 @@ export default class App extends Vue {
 
   name = '';
 
-  allowDrag(evt:any) {
-    console.log(evt);
-  }
-
-  dragStart(evt:any, name:string, index:number) {
+  dragStart(evt:DragEvent, name:string, index:number) {
     evt.target.classList.add('selected');
     // eslint-disable-next-line no-param-reassign
     evt.dataTransfer.dropEffect = 'move';
@@ -104,7 +100,7 @@ export default class App extends Vue {
     };
   }
 
-  dragEnd(event:any) {
+  dragEnd(event:DragEvent) {
     if (this.currentElement.index !== this.firstElement) {
       this.$root.$emit('changeCitys', this.firstElement, this.currentElement.index);
       localStorage.setItem('citys', JSON.stringify(this.citys));
@@ -112,7 +108,7 @@ export default class App extends Vue {
     event.target.classList.remove('selected');
   }
 
-  dragover(evt:any, name:string, index:number) {
+  dragover(evt:DragEvent, name:string, index:number) {
     evt.preventDefault();
     this.currentElement = {
       name,

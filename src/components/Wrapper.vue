@@ -58,15 +58,22 @@ export default class App extends Vue {
   getFirstCity(position:any) {
     const lat:number = position.coords.latitude;
     const lon:number = position.coords.longitude;
+    // const url = `https://api.openweathermap.org/data/2.5/weather?q=${this.name}&appid=${process.env.VUE_APP_API_KEY}`;
     const url = `http://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&local=RU&appid=${process.env.VUE_APP_API_KEY}`;
     axios
       .get(url)
       .then((res) => {
-        const city = res.data[0].local_names.ru;
+        console.log('then');
+        console.log(res);
+        const city = 'Владивосток';
+        // const city = res.data[0].local_names.ru;
         this.citys.push(city);
         localStorage.setItem('citys', JSON.stringify(this.citys));
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log('then');
+        console.log(err);
+      });
   }
 
   errorHandler(err:any) {

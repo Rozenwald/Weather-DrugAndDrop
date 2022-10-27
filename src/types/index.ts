@@ -1,3 +1,7 @@
+import {
+  Method, AxiosAdapter, AxiosBasicCredentials, AxiosProxyConfig, CancelToken, TransitionalOptions,
+} from 'axios';
+
 type TWidget = {
   city: {
     name: string,
@@ -17,55 +21,4 @@ type TWidget = {
   humidity: number, // влажность в процентах
   visibility: string, // Видимость в метрах
 }
-
-export interface AxiosRequestConfig<T = any> {
-  url?: string;
-  method?: Method;
-  baseURL?: string;
-  transformRequest?: AxiosTransformer | AxiosTransformer[];
-  transformResponse?: AxiosTransformer | AxiosTransformer[];
-  headers?: Record<string, string>;
-  params?: any;
-  paramsSerializer?: (params: any) => string;
-  data?: T;
-  timeout?: number;
-  timeoutErrorMessage?: string;
-  withCredentials?: boolean;
-  adapter?: AxiosAdapter;
-  auth?: AxiosBasicCredentials;
-  responseType?: ResponseType;
-  xsrfCookieName?: string;
-  xsrfHeaderName?: string;
-  onUploadProgress?: (progressEvent: any) => void;
-  onDownloadProgress?: (progressEvent: any) => void;
-  maxContentLength?: number;
-  validateStatus?: ((status: number) => boolean) | null;
-  maxBodyLength?: number;
-  maxRedirects?: number;
-  socketPath?: string | null;
-  httpAgent?: any;
-  httpsAgent?: any;
-  proxy?: AxiosProxyConfig | false;
-  cancelToken?: CancelToken;
-  decompress?: boolean;
-  transitional?: TransitionalOptions
-}
-
-type AxiosResponse<T = never> = {
-  data: T;
-  status: number;
-  statusText: string;
-  headers: Record<string, string>;
-  config: AxiosRequestConfig<never>;
-  request?: any;
-}
-
-// export interface AxiosResponse<T = never>  {
-//   data: T; +
-//   status: number; +
-//   statusText: string; +
-//   headers: Record<string, string>; +
-//   config: AxiosRequestConfig<T>; +
-//   request?: any; +
-// }
-export { TWidget, AxiosResponse };
+export { TWidget };

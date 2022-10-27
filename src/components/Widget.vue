@@ -56,7 +56,7 @@
 <script lang="ts">
 import axios from 'axios';
 import { Vue, Component, Prop } from 'vue-property-decorator';
-import { TWidget } from '../types/index';
+import { AxiosResponse, TWidget } from '../types/index';
 
 @Component({
   name: 'Widget',
@@ -72,19 +72,22 @@ export default class App extends Vue {
 
   private getData() {
     this.loading = true;
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${this.name}&appid=${process.env.VUE_APP_API_KEY}&units=metric&local=RU`;
+    console.log(this.name);
+    const url = `http://api.openweathermap.org/data/2.5/weather?q=${this.name}&appid=${process.env.VUE_APP_API_KEY}`;
+    console.log(url);
     axios
       .get(url)
       .then((res) => {
         this.handlerResponse(res);
       })
       .catch((err) => {
+        console.log('catch');
         console.log(err);
         this.loading = false;
       });
   }
 
-  private handlerResponse(res:any) {
+  private handlerResponse(res:AxiosResponse) {
     console.log(res);
     const text = res.data.weather[0].description;
     const description: string = text[0].toUpperCase() + text.slice(1, text.length);
