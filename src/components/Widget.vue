@@ -54,27 +54,25 @@
 </template>
 
 <script lang="ts">
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { Vue, Component, Prop } from 'vue-property-decorator';
-import { AxiosResponse, TWidget } from '../types/index';
+import { TWidget } from '../types/index';
 
 @Component({
   name: 'Widget',
 })
-export default class App extends Vue {
+export default class Widget extends Vue {
   @Prop(String) readonly name!: string;
 
   @Prop(Number) readonly id!: number;
 
-  private data: TWidget|null = null;
+  data: TWidget|null = null;
 
-  private loading = true;
+  loading = true;
 
   private getData() {
     this.loading = true;
-    console.log(this.name);
-    const url = `http://api.openweathermap.org/data/2.5/weather?q=${this.name}&appid=${process.env.VUE_APP_API_KEY}`;
-    console.log(url);
+    const url = `http://api.openweathermap.org/data/2.5/weather?q=${this.name}&units=metric&appid=${process.env.VUE_APP_API_KEY}`;
     axios
       .get(url)
       .then((res) => {
@@ -87,7 +85,7 @@ export default class App extends Vue {
       });
   }
 
-  private handlerResponse(res:AxiosResponse) {
+  private handlerResponse(res: AxiosResponse) {
     console.log(res);
     const text = res.data.weather[0].description;
     const description: string = text[0].toUpperCase() + text.slice(1, text.length);
@@ -110,7 +108,7 @@ export default class App extends Vue {
       humidity: res.data.main.humidity,
       visibility: (res.data.visibility / 1000).toFixed(1),
     };
-    const root = document.querySelector(':root');
+    const root = document.querySelector(':root') as HTMLElement;
     root?.style.setProperty('--deg', `${this.data.wind.deg + 180}deg`);
     this.loading = false;
   }

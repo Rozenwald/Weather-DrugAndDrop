@@ -11,9 +11,7 @@
 </template>
 
 <script lang="ts">
-//   <Widget>
-//   </Widget>
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { Vue, Component } from 'vue-property-decorator';
 import Widget from './Widget.vue';
 import Settings from './Settings.vue';
@@ -26,12 +24,12 @@ import Settings from './Settings.vue';
   },
 })
 
-export default class App extends Vue {
+export default class Wrapper extends Vue {
   tab = 'Widget';
 
   private length: number|undefined;
 
-  private citys:string[] = [];
+  citys: string[] = [];
 
   openSettings() {
     this.tab = 'Settings';
@@ -55,7 +53,8 @@ export default class App extends Vue {
     this.citys.splice(currentIndex, 0, el);
   }
 
-  getFirstCity(position:any) {
+  // eslint-disable-next-line no-undef
+  getFirstCity(position: GeolocationPosition) {
     const lat:number = position.coords.latitude;
     const lon:number = position.coords.longitude;
     // const url = `https://api.openweathermap.org/data/2.5/weather?q=${this.name}&appid=${process.env.VUE_APP_API_KEY}`;
@@ -63,28 +62,19 @@ export default class App extends Vue {
     axios
       .get(url)
       .then((res) => {
-        console.log('then');
-        console.log(res);
-        const city = 'Владивосток';
-        // const city = res.data[0].local_names.ru;
+        const city = res.data[0].local_names.ru;
         this.citys.push(city);
         localStorage.setItem('citys', JSON.stringify(this.citys));
       })
       .catch((err) => {
-        console.log('then');
         console.log(err);
       });
   }
 
-  errorHandler(err:any) {
-    console.log(err);
-  }
-
   created() {
-    if (localStorage.getItem('citys')) {
-      this.citys = JSON.parse(localStorage.getItem('citys'));
-    } else {
-      navigator.geolocation.getCurrentPosition(this.getFirstCity, this.errorHandler);
+    this.citys = JSON.parse(localStorage.getItem('citys') as string);
+    if (this.citys.length === 0) {
+      navigator.geolocation.getCurrentPosition(this.getFirstCity);
     }
 
     this.$root.$on('openSettings', () => this.openSettings());

@@ -1,7 +1,3 @@
-import {
-  Method, AxiosAdapter, AxiosBasicCredentials, AxiosProxyConfig, CancelToken, TransitionalOptions,
-} from 'axios';
-
 type TWidget = {
   city: {
     name: string,
